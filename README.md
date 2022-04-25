@@ -1,70 +1,81 @@
-# Getting Started with Create React App
+# **GCP final project frontend**
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Web app deployment
+### Image build
+    docker build --platform linux/amd64 -t zofiapx/frontend:amd
 
-## Available Scripts
+### Docker hub push
+    docker push zofiapx/frontend:amd
 
-In the project directory, you can run:
+### Docker image run
+    docker run -d -p 80:3000 --name gcpfrontend zofiapx/frontend:amd
+## VMs
+### Comando para crear la VM 1
+    gcloud compute instances create firstvm \
+        --image-family ubuntu-pro-1804-lts \
+        --image-project ubuntu-os-pro-cloud \
+        --tags finalproject \
+        --metadata startup-script="#! /bin/bash
+            sudo apt update -y; 
+            sudo apt install docker.io -y; 
+            sudo chmod 666 /var/run/docker.sock; 
 
-### `npm start`
+            docker run -d -p 80:3000 --name gcpfrontend zofiapx/frontend:amd
+        "
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Comando para crear la VM 2
+    gcloud compute instances create secondvm \
+        --image-family ubuntu-pro-1804-lts \
+        --image-project ubuntu-os-pro-cloud \
+        --tags finalproject \
+        --metadata startup-script="#! /bin/bash
+            sudo apt update -y; 
+            sudo apt install docker.io -y; 
+            sudo chmod 666 /var/run/docker.sock; 
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+            docker run -d -p 80:3000 --name gcpfrontend zofiapx/frontend:amd
+        "
 
-### `npm test`
+### Comando para crear la VM 3
+    gcloud compute instances create thirdvm \
+        --image-family ubuntu-pro-1804-lts \
+        --image-project ubuntu-os-pro-cloud \
+        --tags finalproject \
+        --metadata startup-script="#! /bin/bash
+            sudo apt update -y; 
+            sudo apt install docker.io -y; 
+            sudo chmod 666 /var/run/docker.sock; 
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+            docker run -d -p 80:3000 --name gcpfrontend zofiapx/frontend:amd
+        "
+### Visualizacion de VMs creadas
+    gcloud compute instances list
+### Creando regla de acceso en el firewall -> port 80
+    gcloud compute firewall-rules create firewall-network-gcp \
+        --target-tags finalproject \
+        --allow tcp:80
 
-### `npm run build`
+## Load Balancer
+### Load balancer creation
+    gcloud compute addresses create finalproject-lb-1
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Health check creation
+    gcloud compute http-health-checks create finalproject-hc-1
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Create a target pool to health check
+    gcloud compute target-pools create finalproject-pool \
+        --http-health-check finalproject-hc-1
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Assign instances to target pool
+    gcloud compute target-pools add-instances finalproject-pool \
+        --instances firstvm,secondvm,thirdvm
 
-### `npm run eject`
+### Adding a forwarding rule to lb
+    gcloud compute forwarding-rules create finalproject-rule \
+        --ports 80 \
+        --address finalproject-lb-1 \
+        --target-pool finalproject-pool
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Load balancer review
+    gcloud compute forwarding-rules describe finalproject-rule
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
