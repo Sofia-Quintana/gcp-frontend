@@ -1,4 +1,7 @@
 # **GCP final project frontend**
+> ## **Load Balancer IP**
+> `34.148.25.108`
+
 
 ## Web app deployment
 ### Image build
@@ -78,4 +81,3 @@
 
 ### Load balancer review
     gcloud compute forwarding-rules describe finalproject-rule
-
