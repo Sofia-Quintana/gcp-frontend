@@ -65,7 +65,7 @@
 ### Health check creation
     gcloud compute http-health-checks create finalproject-hc-1
 
-### Create a target pool to health check
+### Create a target pool for health check
     gcloud compute target-pools create finalproject-pool \
         --http-health-check finalproject-hc-1
 
